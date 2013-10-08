@@ -16,6 +16,7 @@ GAME_WIDTH = 4
 GAME_HEIGHT = 4
 WIN_SPACE = None
 NUM_ELTS = 8
+NUM_GEMS = 2
 
 #### Put class definitions here ####
 class Rock(GameElement):
@@ -195,7 +196,7 @@ def keyboard_handler():
         move(direction, PLAYER)
         if (PLAYER.x, PLAYER.y) == WIN_SPACE:
             gems = PLAYER.inventory.get("Blue Gem")
-            if gems and len(gems) == 2:
+            if gems and len(gems) == NUM_GEMS:
                 GAME_BOARD.draw_msg("You win!")
                 clear_board()
                 
