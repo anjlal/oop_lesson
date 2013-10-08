@@ -40,7 +40,11 @@ def setup_images():
             "Cat": "Character Cat Girl.png",
             "Horns": "Character Horn Girl.png",
             "Girl": "Character Pink Girl.png",
-            "Princess": "Character Princess Girl.png"
+            "Princess": "Character Princess Girl.png",
+            "Iron Throne": "ironthrone.png",
+            "Tall Wall": "Wall Block Tall.png",
+            "White Walker":"whitewalker.png",
+            "Crown": "crown.png"
             }
 
     for k,v in filenames.items():
@@ -67,28 +71,32 @@ class Board(object):
         self.offset_y = -SCREEN_Y/2 + board_height_px/2 + TILE_HEIGHT/4
 
 
+        self.create("Block","GrassBlock")
+
+    def create(self, border, bg):
         # Make a map with a stoneblock border and filled with grass
         game_map = []
-        inner_width = width-2
-        for i in range(height):
-            if i == 0 or i == height-1:
+        inner_width = self.width-2
+
+        for i in range(self.height):
+            if i == 0 or i == self.height-1:
                 # On the boundaries
-                game_map.append(["Block"] * width)
+                game_map.append([border] * self.width)
             else:
-                row = ["Block"] + (["GrassBlock"] * inner_width) + ["Block"]
+                row = [border] + ([bg] * inner_width) + [border]
                 game_map.append(row)
         
         self.base_board = game_map
         self.content_layer = []
-        row = [ None ] * width
-        for y in range(height):
+        row = [ None ] * self.width
+        for y in range(self.height):
             self.content_layer.append(list(row))
 
         self.message = pyglet.text.Label(text = "", x=10, y=SCREEN_Y-30)
         self.bg_sprites = []
 
-        for y in range(height):
-            for x in range(width):
+        for y in range(self.height):
+            for x in range(self.width):
                 img_idx = game_map[y][x]
                 image = IMAGES[img_idx]
 

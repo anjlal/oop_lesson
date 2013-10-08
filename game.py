@@ -12,22 +12,19 @@ KEYBOARD = None
 PLAYER = None
 ######################
 
-GAME_WIDTH = 4
-GAME_HEIGHT = 4
+GAME_WIDTH = 7
+GAME_HEIGHT = 7
 WIN_SPACE = None
 NUM_ELTS = 8
 NUM_GEMS = 2
+LEVEL_COUNTER = 1
+FINAL_LEVEL = 2
 
 #### Put class definitions here ####
-class Rock(GameElement):
-    IMAGE = "Rock"
-    SOLID = True
-
 class Character(GameElement):
     def __init__(self):
         GameElement.__init__(self)
-        self.inventory = {}
-
+        self.inventory = []
     IMAGE = "Cat"
     current_dir = None
 
@@ -55,6 +52,10 @@ class NPC(Character):
             #delete boy from board
             #player.inventory.remove()
 
+class Rock(GameElement):
+    IMAGE = "Rock"
+    SOLID = True
+
 class Block(GameElement):
     IMAGE = "Block"
     SOLID = False
@@ -81,20 +82,62 @@ class Block(GameElement):
             return (self.x+1, self.y)
         return None
 
-class Gem(GameElement):
+class IronThrone(GameElement):
+    SOLID = True
+    IMAGE = "Iron Throne"
 
     def interact(self, player):
-        if player.inventory.get(self.NAME, None) == None:
-            player.inventory[self.NAME] = [self]
-        else:
-            player.inventory[self.NAME].append(self)
+        GAME_BOARD.draw_msg("You ascend the Iron Throne. You are now the true ruler of Westeros!")
+    # disable movement somehow, or give you option to reset?
+
+class Collectable(GameElement):
+    SOLID = False
+    NAME = "item"
+
+    def interact(self, player):
+        player.inventory.append(self)
         print player.inventory
 
-        GAME_BOARD.draw_msg("You just acquired a gem! You have %d items!" % (len(player.inventory[self.NAME])))
+        GAME_BOARD.draw_msg("You just acquired a %s! You have %d items!" % (self.NAME, len(player.inventory)))
+
+    def __str__(self):
+        return self.NAME
+
+class Gem(Collectable):
 
     IMAGE = "BlueGem"
-    NAME = "Blue Gem"
-    SOLID = False
+    NAME = "Gem"
+
+class Crown(Collectable):
+
+    IMAGE = "Crown"
+    NAME = "Crown"
+
+class WhiteWalker(GameElement):
+    IMAGE = "White Walker"
+    SOLID = True
+
+class Wall(GameElement):
+    IMAGE = "Wall"
+    SOLID = True
+
+class TallWall(GameElement):
+    IMAGE = "Tall Wall"
+    SOLID = True
+
+class Door(GameElement):
+    IMAGE = "DoorClosed"
+    SOLID = True
+
+    def interact(self, player):
+        #go to the final level
+        global PLAYER
+
+        clear_board()
+        GAME_BOARD.create("StoneBlock","Block")
+        throne = IronThrone()
+        place_on_board(throne, 3, 2)
+        place_on_board(PLAYER, 3, 6)
 
 ####   End class definitions    ####
 
@@ -139,7 +182,7 @@ def clear_board():
 def initialize():
     """Put game initialization code here"""
 
-    GAME_BOARD.draw_msg("We are making a game.")
+    GAME_BOARD.draw_msg("Level %d" % LEVEL_COUNTER)
 
     global PLAYER # this means we use the global var PLAYER and cannot have a local var named PLAYER
     
@@ -153,8 +196,11 @@ def initialize():
     rock2 = Rock()
     rock3 = Rock()
     rock4 = Rock()
+    throne = IronThrone()
+    ww = WhiteWalker()
+    crown = Crown()
 
-    generate_level(coordinates, [PLAYER, gem, rock, rock2, block, gem2, rock3, rock4])
+    generate_level(coordinates, [PLAYER, throne, ww, gem, crown, rock, rock, block, gem, rock, rock])
 
     # for i in range(0,NUM_ELTS):
     #     place_on_board(elts[i], coordinates[i][0], coordinates[i][1])
@@ -179,6 +225,14 @@ def generate_coords():
 def keyboard_handler():
     # all of your keyboard event listening has to happen here, but you can add different game states if you want...
 
+    gem = Gem()
+    block = Block()
+    gem2 = Gem()
+    rock = Rock()
+    rock2 = Rock()
+    rock3 = Rock()
+    rock4 = Rock()
+
     direction = None
 
     if KEYBOARD[key.UP]:
@@ -191,37 +245,49 @@ def keyboard_handler():
         direction ="right"
 
     global PLAYER
+    global WIN_SPACE
+    global LEVEL_COUNTER
 
     if direction:
         move(direction, PLAYER)
         if (PLAYER.x, PLAYER.y) == WIN_SPACE:
             gems = PLAYER.inventory.get("Blue Gem")
             if gems and len(gems) == NUM_GEMS:
-                GAME_BOARD.draw_msg("You win!")
+                LEVEL_COUNTER += 1
                 clear_board()
-                
-                PLAYER = Character() # this makes a new player instance so will also get rid of your inventory. change this if you want to keep items.
-                gem = Gem()
-                block = Block()
-                gem2 = Gem()
-                rock = Rock()
-                rock2 = Rock()
-                rock3 = Rock()
-                rock4 = Rock()
+                if LEVEL_COUNTER == FINAL_LEVEL:
+                    # draw castle
+                    GAME_BOARD.create("StoneBlock","GrassBlock")
 
-                coords = generate_coords()
-                generate_level(coords, [PLAYER, gem, rock, rock2, block, gem2, rock3, rock4])
+                    WIN_SPACE = None
+                    wall = Wall()
+                    tall_wall = TallWall()
+                    door = Door()
+
+                    place_on_board(PLAYER, 3, 6)
+                    place_on_board(wall, 1, 2)
+                    place_on_board(tall_wall, 2, 2)
+                    place_on_board(door, 3, 2)
+                    place_on_board(tall_wall, 4, 2)
+                    place_on_board(wall, 5, 2)
+                else:
+                    
+                    PLAYER = Character() # this makes a new player instance so will also get rid of your inventory. change this if you want to keep items. 
+
+                    coords = generate_coords()
+                    generate_level(coords, [PLAYER, gem, rock, rock2, block, gem2, rock3, rock4])
+
+                    GAME_BOARD.draw_msg("Level %d" % LEVEL_COUNTER)
 
     if KEYBOARD[key.I]:
         inv = "Inventory: "
-        for k, val in PLAYER.inventory.items():
-            inv += str(len(val)) + " "
-            inv += k
-            if len(val) > 1:
-                inv += "s" 
-
+        for item in PLAYER.inventory:
+            inv += str(item) + " "
         GAME_BOARD.draw_msg(inv)
 
     if KEYBOARD[key.C]:
-        clear_board()
-        generate_coords()
+        if LEVEL_COUNTER != FINAL_LEVEL:
+            clear_board()
+            coords = generate_coords()
+            PLAYER = Character() # this makes a new player instance so will also get rid of your inventory. change this if you want to keep items.
+            generate_level(coords, [PLAYER, gem, rock, rock2, block, gem2, rock3, rock4])
