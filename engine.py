@@ -33,7 +33,7 @@ def setup_images():
             "DoorOpen": "Door Tall Open.png",
             "BlueGem": "Gem Blue.png",
             "GreenGem": "Gem Green.png",
-            "OrangeGem": "Gem Orange.png",
+            "YellowGem": "Gem Orange.png",
             "Heart": "Heart.png",
             "Key": "Key.png",
             "Boy": "Character Boy.png",
@@ -44,7 +44,18 @@ def setup_images():
             "Iron Throne": "ironthrone.png",
             "Tall Wall": "Wall Block Tall.png",
             "White Walker":"whitewalker.png",
-            "Crown": "crown.png"
+            "Crown": "crown.png",
+            "Dirt":"Dirt Block.png",
+            "GrayGem":"Gem Gray.png",
+            "BlackGem":"Gem Black.png",
+            "RedGem":"Gem Red.png",
+            "Snow":"snow.png",
+            "Stark":"stark.png",
+            "Baratheon":"baratheon.png",
+            "Lannister":"lannister.png",
+            "Targaryen":"targaryen.png",
+            "Goblet":"goblet.png",
+            "Dragon":"dragon.png"
             }
 
     for k,v in filenames.items():
