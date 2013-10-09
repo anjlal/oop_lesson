@@ -54,8 +54,9 @@ def setup_images():
             "Baratheon":"baratheon.png",
             "Lannister":"lannister.png",
             "Targaryen":"targaryen.png",
-            "Goblet":"goblet.png",
-            "Dragon":"dragon.png"
+            "Boar":"boar.png",
+            "Dragon":"dragon.png",
+            "Jofferey":"jofferey.png"
             }
 
     for k,v in filenames.items():
@@ -249,7 +250,7 @@ def run():
         pass
         
     # Set up the update clock
-    pyglet.clock.schedule_interval(update, 1/10.)
+    pyglet.clock.schedule_interval(update, 1/10.0)
     game.initialize()
     pyglet.app.run()
 

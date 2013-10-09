@@ -40,6 +40,11 @@ class Character(GameElement):
             return (self.x+1, self.y)
         return None
 
+    def interact(self, enemy):
+        global GAME_STATE
+        GAME_STATE = "lost"
+        GAME_BOARD.draw_msg("You lost the game. Press SPACE to restart.")
+
 class Stark(Character):
     IMAGE = "Stark"
 
@@ -99,9 +104,12 @@ class Collectable(GameElement):
     NAME = "item"
 
     def interact(self, player):
-        player.inventory.append(self)
-
-        GAME_BOARD.draw_msg("You just acquired a %s! You have %d items!" % (self.NAME, len(player.inventory)))
+        if(player == PLAYER):
+            self.SOLID = False
+            player.inventory.append(self)
+            GAME_BOARD.draw_msg("You just acquired a %s! You have %d items!" % (self.NAME, len(player.inventory)))
+        else:
+            self.SOLID = True
 
     def __str__(self):
         return self.NAME
@@ -132,14 +140,56 @@ class Crown(Collectable):
     IMAGE = "Crown"
     NAME = "Crown"
 
-class WhiteWalker(GameElement):
-    IMAGE = "White Walker"
+class BadGuy(GameElement):
     SOLID = True
+
+    def __init__(self):
+        GameElement.__init__(self)
+        self.elapsed_time = 0
+        self.status = 1
 
     def interact(self, player):
         global GAME_STATE
         GAME_STATE = "lost"
+        self.status = 0
         GAME_BOARD.draw_msg("You lost the game. Press SPACE to restart.")
+
+    def next_pos(self, direction):
+        if direction == "up":
+            return (self.x, self.y-1)
+        elif direction == "down":
+            return (self.x, self.y+1)
+        elif direction == "left":
+            return (self.x-1, self.y)
+        elif direction == "right":
+            return (self.x+1, self.y)
+        return None
+
+    # def update(self, dt):
+    #     self.elapsed_time += dt
+    #     if self.elapsed_time > 0.5 and self.status == 1:
+    #         # print self.elapsed_time
+
+    #         directions = ["up", "down", "left", "right"]
+    #         if GAME_STATE != "lost":
+    #             move(random.choice(directions), self)
+
+    #         self.elapsed_time = 0
+
+class WhiteWalker(BadGuy):
+    IMAGE = "White Walker"
+
+class Boar(BadGuy):
+    IMAGE = "Boar"
+    SOLID = True
+
+class Jofferey(BadGuy):
+    IMAGE = "Jofferey"
+    SOLID = True
+
+class Dragon(BadGuy):
+    IMAGE = "Dragon"
+    SOLID = True
 
 class Wall(GameElement):
     IMAGE = "Wall"
@@ -151,18 +201,6 @@ class TallWall(GameElement):
 
 class Tree(GameElement):
     IMAGE = "ShortTree"
-    SOLID = True
-
-class Goblet(GameElement):
-    IMAGE = "Goblet"
-    SOLID = True
-
-class Chest(GameElement):
-    IMAGE = "Chest"
-    SOLID = True
-
-class Dragon(GameElement):
-    IMAGE = "Dragon"
     SOLID = True
 
 class Door(GameElement):
@@ -221,7 +259,11 @@ def clear_board():
 
 def initialize():
     """Put game initialization code here"""
+
     global PLAYER # this means we use the global var PLAYER and cannot have a local var named PLAYER
+    global LEVEL_COUNTER
+
+    LEVEL_COUNTER = 1
     
     coordinates = generate_coords()
 
@@ -230,7 +272,7 @@ def initialize():
     ww = WhiteWalker()
     crown = Crown()
     gray_gem = GrayGem()
-
+    clear_board()
     GAME_BOARD.create("Snow","Snow")
     GAME_BOARD.draw_msg("Level " + str(LEVEL_COUNTER) + ". Winter is coming.")
     generate_level(coordinates, [PLAYER, ww, gray_gem, crown, tree, tree, gray_gem, tree, tree, gray_gem, tree])
@@ -294,20 +336,20 @@ def keyboard_handler():
                         GAME_BOARD.create("StoneBlock","GrassBlock")
                         GAME_BOARD.draw_msg("Level " + str(LEVEL_COUNTER) + ". Ours is the fury.")
 
-                        goblet = Goblet()
+                        boar = Boar()
                         y_gem = YellowGem()
 
-                        generate_level(coords, [PLAYER, goblet, y_gem, crown, tree, tree, y_gem, tree, tree, y_gem, tree])
+                        generate_level(coords, [PLAYER, boar, y_gem, crown, tree, tree, y_gem, tree, tree, y_gem, tree])
                     elif LEVEL_COUNTER == 3:
                         #lannister
                         PLAYER = Lannister()
                         GAME_BOARD.create("StoneBlock","Dirt")
                         GAME_BOARD.draw_msg("Level " + str(LEVEL_COUNTER) + ". A Lannister always pays his debts.")
 
-                        chest = Chest()
+                        joff = Jofferey()
                         red_gem = RedGem()
 
-                        generate_level(coords, [PLAYER, chest, red_gem, crown, tree, tree, red_gem, tree, tree, red_gem, tree])
+                        generate_level(coords, [PLAYER, joff, red_gem, crown, tree, tree, red_gem, tree, tree, red_gem, tree])
                     elif LEVEL_COUNTER == 4:
                         #targaryen
                         PLAYER = Targaryen()
